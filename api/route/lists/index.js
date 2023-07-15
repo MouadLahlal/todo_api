@@ -36,7 +36,7 @@ const validateToken = (req, res, next) => {
  * returns all lists associated with the user
  */
 router.get('/getAll', validateToken, async (req, res) => {
-    var idaccount = req.account.idaccount;
+    var idaccount = req.account;
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
@@ -60,41 +60,13 @@ router.get('/getAll', validateToken, async (req, res) => {
     }
 });
 
-/**
- * returns all tasks saved in the given list
- */
-router.get('/:list', validateToken, async (req, res) => {
-    var list = req.params.list;
-    var idaccount = req.account.idaccount;
-
-    if (idaccount && list) {
-        db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM tasks WHERE list = ? AND idaccount = ?", [list, idaccount], (error, results, fields) => {
-                connection.release();
-                if (error) {
-                    console.log(error);
-                    res.json({status:false, message:"An error occurred while getting tasks, please try again later"});
-                } else if (results.length > 0) {
-                    res.json({status:true, message:"Action performed correctly", content:results});
-                } else {
-                    res.json({status:false, message:"Action performed successfully but no task found"});
-                }
-    
-                res.end();
-            });
-        });
-    } else {
-        res.json({status:false, message:"Please enter all data correctly"});
-        res.end();
-    }
-});
 
 /**
  * returns the tasks to be completed that day
- */
+*/
 router.get('/getToday', validateToken, async (req, res) => {
-    var idaccount = req.account.idaccount;
-
+    var idaccount = req.account;
+    
     if (idaccount) {
         db.getConnection(async (err, connection) => {
             let temp = new Date();
@@ -119,13 +91,14 @@ router.get('/getToday', validateToken, async (req, res) => {
 
 /**
  * returns tasks marked as important
- */
+*/
 router.get('/getImportant', validateToken, async (req, res) => {
-    var idaccount = req.account.idaccount;
+    var idaccount = req.account;
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=4", [idaccount], (error, results) => {
+            console.log(idaccount);
+            await connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=? and done=?", [idaccount, 4, 0], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -133,7 +106,7 @@ router.get('/getImportant', validateToken, async (req, res) => {
                 } else if (results.length > 0) {
                     res.json({status:true, message:"Action perfomed correctly", content:results});
                 } else {
-                    req.json({status:false, message:"Action perfomed successfully but no task found"});
+                    res.json({status:false, message:"Action perfomed successfully but no task found"});
                 }
 
                 res.end();
@@ -143,11 +116,40 @@ router.get('/getImportant', validateToken, async (req, res) => {
 });
 
 /**
- * create a new list
+ * returns all tasks saved in the given list
  */
+router.get('/:list', validateToken, async (req, res) => {
+    var list = req.params.list;
+    var idaccount = req.account;
+
+    if (idaccount && list) {
+        db.getConnection(async (err, connection) => {
+            await connection.query("SELECT * FROM tasks WHERE list = ? AND idaccount = ?", [list, idaccount], (error, results, fields) => {
+                connection.release();
+                if (error) {
+                    console.log(error);
+                    res.json({status:false, message:"An error occurred while getting tasks, please try again later"});
+                } else if (results.length > 0) {
+                    res.json({status:true, message:"Action performed correctly", content:results});
+                } else {
+                    res.json({status:false, message:"Action performed successfully but no task found"});
+                }
+    
+                res.end();
+            });
+        });
+    } else {
+        res.json({status:false, message:"Please enter all data correctly"});
+        res.end();
+    }
+});
+
+/**
+ * create a new list
+*/
 router.post('/add', validateToken, async (req, res) => {
     var name = req.body.name;
-    var idaccount = req.account.idaccount;
+    var idaccount = req.account;
 
     if (idaccount && name) {
         db.getConnection(async (err, connection) => {
@@ -159,7 +161,7 @@ router.post('/add', validateToken, async (req, res) => {
                 } else {
                     res.json({status:true, message:"List created successfully"});
                 }
-    
+                
                 res.end();
             });
         });
@@ -174,7 +176,7 @@ router.post('/add', validateToken, async (req, res) => {
  */
 router.post('/modify', validateToken, async (req, res) => {
     var [ idlist, newname ] = [ req.body.idlist, req.body.newname ];
-    var idaccount = req.account.idaccount;
+    var idaccount = req.account;
 
     if (idaccount && idlist && newname) {
         db.getConnection(async (err, connection) => {
@@ -201,7 +203,7 @@ router.post('/modify', validateToken, async (req, res) => {
  */
 router.post('/delete', validateToken, async (req, res) => {
     var idlist = req.body.idlist;
-    var idaccount = req.account.idaccount;
+    var idaccount = req.account;
 
     if (idaccount && idlist) {
         db.getConnection(async (err, connection) => {

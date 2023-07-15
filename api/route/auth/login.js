@@ -42,7 +42,7 @@ router.post('/', (req, res) => {
                     res.json({status:false, message:"There was an error logging into your account, please try again later"});
                 } else if (results.length > 0) {
                     if(bcrypt.compareSync(password, results[0].password)){
-                        let accessToken = jwt.sign({idaccount}, process.env.SECRET_TOKEN);
+                        let accessToken = jwt.sign(results[0].idaccount, process.env.SECRET_TOKEN);
                         res.json({status:true, message:"Login successful", idaccount:results[0].idaccount, accessToken:accessToken});
                     } else {
                         res.json({status:false, message:"Your credentials are incorrect, please try again"});    
