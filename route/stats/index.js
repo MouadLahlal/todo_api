@@ -18,6 +18,7 @@ const validateToken = (req, res, next) => {
     } else {
         jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
             if (err) {
+                console.log(err);
                 res.json({status:false, message:"An error occured while checking your authorization"});
                 res.end();
             } else {
