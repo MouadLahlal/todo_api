@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql');
 const db = require('../../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -35,7 +34,8 @@ router.post('/', (req, res) => {
 
     if (username && password) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM account WHERE username = ?", [username], async (error, results) => {
+            if (err) console.log(err);
+            connection.query("SELECT * FROM account WHERE username = ?", [username], async (error, results) => {
                 connection.release();
                 
                 if (error) {
@@ -66,7 +66,7 @@ router.post('/checkLogged', validateToken, (req, res) => {
     if (idaccount) {
         db.getConnection(async (err, connection) => {
             if(err)console.log(err);
-            await connection.query("SELECT * FROM account WHERE idaccount=?", [idaccount], (error, results) => {
+            connection.query("SELECT * FROM account WHERE idaccount=?", [idaccount], (error, results) => {
                 connection.release();
                 if (error) {
                     res.json({status:false, message:"There was an errror checking if you're logged, please try again later"});

@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql');
 const db = require('../../db');
 const jwt = require('jsonwebtoken');
 
@@ -40,7 +39,7 @@ router.get('/getAll', validateToken, async (req, res) => {
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM lists WHERE idaccount = ?", [idaccount], (error, results, fiels) => {
+            connection.query("SELECT * FROM lists WHERE idaccount = ?", [idaccount], (error, results, fiels) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -72,7 +71,7 @@ router.get('/getToday', validateToken, async (req, res) => {
             let temp = new Date();
             let today = `${temp.getFullYear()}-${temp.getMonth()+1}-${temp.getDate()}`;
             console.log(today);
-            await connection.query("SELECT * FROM tasks WHERE idaccount=? AND expiration=?", [idaccount, today], (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=? AND expiration=?", [idaccount, today], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -98,7 +97,7 @@ router.get('/getImportant', validateToken, async (req, res) => {
     if (idaccount) {
         db.getConnection(async (err, connection) => {
             console.log(idaccount);
-            await connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=? and done=?", [idaccount, 4, 0], (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=? and done=?", [idaccount, 4, 0], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -124,7 +123,7 @@ router.get('/:list', validateToken, async (req, res) => {
 
     if (idaccount && list) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM tasks WHERE list = ? AND idaccount = ?", [list, idaccount], (error, results, fields) => {
+            connection.query("SELECT * FROM tasks WHERE list = ? AND idaccount = ?", [list, idaccount], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -153,7 +152,7 @@ router.post('/add', validateToken, async (req, res) => {
 
     if (idaccount && name) {
         db.getConnection(async (err, connection) => {
-            await connection.query("INSERT INTO lists (idaccount, name) VALUES (?, ?)", [idaccount, name], (error, results, fields) => {
+            connection.query("INSERT INTO lists (idaccount, name) VALUES (?, ?)", [idaccount, name], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -180,7 +179,7 @@ router.post('/modify', validateToken, async (req, res) => {
 
     if (idaccount && idlist && newname) {
         db.getConnection(async (err, connection) => {
-            await connection.query("UPDATE lists SET name = ? WHERE idaccount = ? AND idlist = ?", [newname, idaccount, idlist], (error, results, fields) => {
+            connection.query("UPDATE lists SET name = ? WHERE idaccount = ? AND idlist = ?", [newname, idaccount, idlist], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -207,7 +206,7 @@ router.post('/delete', validateToken, async (req, res) => {
 
     if (idaccount && idlist) {
         db.getConnection(async (err, connection) => {
-            await connection.query("DELETE FROM lists WHERE idaccount=? AND idlist=?", [idaccount, idlist], (error, results) => {
+            connection.query("DELETE FROM lists WHERE idaccount=? AND idlist=?", [idaccount, idlist], (error, results) => {
                 connection.release();
                 
                 if (error) {

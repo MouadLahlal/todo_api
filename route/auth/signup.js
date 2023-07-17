@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql');
 const db = require('../../db');
 const bcrypt = require('bcrypt');
 
@@ -10,7 +9,7 @@ router.use(express.json());
 const emailExists = (email) => {
     return new Promise((resolve, reject) => {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT email FROM account WHERE email = ?", [email], (error, results, fields) => {
+            connection.query("SELECT email FROM account WHERE email = ?", [email], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -28,7 +27,7 @@ const emailExists = (email) => {
 const usernameExists = (username) => {
     return new Promise((resolve, reject) => {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT username FROM account WHERE username = ?", [username], (error, results, fields) => {
+            connection.query("SELECT username FROM account WHERE username = ?", [username], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -77,9 +76,12 @@ router.post('/', async (req, res) => {
     if (username && email && password && !await emailExists(email) && !await usernameExists(username)) {
         await generateAccountId(username, password).then(async (idaccount) => {
             await hashPassword(password).then(async (hashedPsw) => {
-                await db.getConnection(async (err, connection) => {
-                    await connection.query("INSERT INTO account (idaccount, username, email, password) VALUES (?, ?, ?, ?)", [idaccount, username, email, hashedPsw], (error, results) => {
+                db.getConnection(async (err, connection) => {
+                    if (err) console.log(err);
+                    else console.log("No problem");
+                    connection.query("INSERT INTO account (idaccount, username, email, password) VALUES (?, ?, ?, ?)", [idaccount, username, email, hashedPsw], (error, results) => {
                         connection.release();
+                        console.log(results);
                         if (error) {
                             console.log(error);
                             res.json({status:false, message:"An error occurred while creating your account, please try again later"});

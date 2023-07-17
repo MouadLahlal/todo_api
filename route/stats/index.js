@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql');
 const db = require('../../db');
 const jwt = require('jsonwebtoken');
 
@@ -74,14 +73,14 @@ router.get('/getProgress', validateToken, async (req, res) => {
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM tasks WHERE idaccount=?" , [idaccount], async (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=?" , [idaccount], async (error, results) => {
                 if (error) {
                     res.json({status:false, message:"An error occured while executing a query, please try again later"});
                     connection.release();
                     res.end();
                 } else {
                     let nTasks = results.length;
-                    await connection.query("SELECT * FROM tasks WHERE idaccount=? AND done=1", [idaccount], async (error, results) => {
+                    connection.query("SELECT * FROM tasks WHERE idaccount=? AND done=1", [idaccount], async (error, results) => {
                         connection.release();
                         if (error) {
                             res.json({status:false, message:"An error occured while executing a query, please try again later"});
@@ -104,7 +103,7 @@ router.get('/getStatistic', validateToken, async (req, res) => {
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
-            await connection.query("SELECT * FROM tasks WHERE idaccount=? AND done=?", [idaccount, 1], async (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=? AND done=?", [idaccount, 1], async (error, results) => {
                 if (error) {
                     res.json({status:false, message:"An error occured while creating the statistics"});
                 } else {

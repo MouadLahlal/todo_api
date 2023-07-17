@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql');
 const db = require('../../db');
 const jwt = require('jsonwebtoken');
 
@@ -37,7 +36,7 @@ router.post('/add', validateToken, async (req, res) => {
 
     if (task && list && idaccount) {
         db.getConnection(async (err, connection) => {
-            await connection.query(`INSERT INTO tasks (idaccount, task, list, done ${note?", note":""}${expiration?", expiration":""}${priority?", priority":""}) VALUES (?, ?, ?, FALSE ${note?", ?":""}${expiration?", ?":""}${priority?", ?":""})`, [idaccount, task, list, note, expiration, priority], (error, results, fields) => {
+            connection.query(`INSERT INTO tasks (idaccount, task, list, done ${note?", note":""}${expiration?", expiration":""}${priority?", priority":""}) VALUES (?, ?, ?, FALSE ${note?", ?":""}${expiration?", ?":""}${priority?", ?":""})`, [idaccount, task, list, note, expiration, priority], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -63,7 +62,7 @@ router.post('/modify', validateToken, async (req, res) => {
         // QUERY
         // `UPDATE tasks SET task = ?, list = ? ${note?", note = ?":""}${expiration?", expiration = ?":""}${priority?", priority = ?":""}${done?`, done = ${done==='true'?'TRUE':'FALSE'}`:""} WHERE idtask = ? AND idaccount = ?`
         db.getConnection(async (err, connection) => {
-            await connection.query(`UPDATE tasks SET task = ?, list = ?, note = ?, expiration = ?, priority = ? , done = ${done==='true'?'TRUE':done==='false'?'FALSE':''} WHERE idtask = ? AND idaccount = ?`, [task, list, note, expiration, priority, idtask, idaccount], (error, results, fields) => {
+            connection.query(`UPDATE tasks SET task = ?, list = ?, note = ?, expiration = ?, priority = ? , done = ${done==='true'?'TRUE':done==='false'?'FALSE':''} WHERE idtask = ? AND idaccount = ?`, [task, list, note, expiration, priority, idtask, idaccount], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -87,7 +86,7 @@ router.post('/:idtask/delete', validateToken, async (req, res) => {
 
     if (idaccount && idtask) {
         db.getConnection(async (err, connection) => {
-            await connection.query('DELETE FROM tasks WHERE idaccount=? AND idtask=?', [idaccount, idtask], (error, results) => {
+            connection.query('DELETE FROM tasks WHERE idaccount=? AND idtask=?', [idaccount, idtask], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
@@ -112,7 +111,7 @@ router.post('/:idtask/done', validateToken, async (req, res) => {
         db.getConnection(async (err, connection) =>{
             let temp = new Date();
             let today = `${temp.getFullYear()}-${temp.getMonth()+1}-${temp.getDate()}`;
-            await connection.query("UPDATE tasks SET done=?, completedon=? WHERE idaccount=? AND idtask=? AND done=0", [1, today, idaccount, idtask], (error, results) => {
+            connection.query("UPDATE tasks SET done=?, completedon=? WHERE idaccount=? AND idtask=? AND done=0", [1, today, idaccount, idtask], (error, results) => {
                 if (error) {
                     console.log(error);
                     res.json({status:false, message:"An error occured while setting as completed the task"});
