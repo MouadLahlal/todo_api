@@ -64,6 +64,8 @@ router.post('/', (req, res) => {
 router.post('/checkLogged', validateToken, (req, res) => {
     var idaccount = req.body.account;
 
+    console.log(req.body);
+
     if (idaccount) {
         db.getConnection(async (err, connection) => {
             if(err)console.log(err);
