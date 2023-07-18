@@ -19,7 +19,6 @@ const validateToken = (req, res, next) => {
     } else {
         jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
             if (err) {
-                console.log(err);
                 res.json({status:false, message:"An error occured while checking your authorization"});
                 res.end();
             } else {
@@ -63,7 +62,7 @@ router.post('/', (req, res) => {
 });
 
 router.post('/checkLogged', validateToken, (req, res) => {
-    var idaccount = req.body.idaccount;
+    var idaccount = req.body.account;
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
