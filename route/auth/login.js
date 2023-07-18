@@ -11,7 +11,6 @@ const validateToken = (req, res, next) => {
     try {
         var authHeader = req.headers["authorization"];
         var token = authHeader.split(" ")[1];
-        console.log(authHeader, token);
     } catch (error) {}
 
     if (!token) {
@@ -24,6 +23,7 @@ const validateToken = (req, res, next) => {
                 res.json({status:false, message:"An error occured while checking your authorization"});
                 res.end();
             } else {
+                console.log(user);
                 req.account = user;
                 next();
             }
