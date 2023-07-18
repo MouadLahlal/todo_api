@@ -11,6 +11,7 @@ const validateToken = (req, res, next) => {
     try {
         var authHeader = req.headers["authorization"];
         var token = authHeader.split(" ")[1];
+        console.log(authHeader, token);
     } catch (error) {}
 
     if (!token) {
@@ -63,8 +64,6 @@ router.post('/', (req, res) => {
 
 router.post('/checkLogged', validateToken, (req, res) => {
     var idaccount = req.body.idaccount;
-
-    console.log(idaccount, req.body);
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
