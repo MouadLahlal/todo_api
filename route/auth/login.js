@@ -22,7 +22,6 @@ const validateToken = (req, res, next) => {
                 res.json({status:false, message:"An error occured while checking your authorization"});
                 res.end();
             } else {
-                console.log(user);
                 req.account = user;
                 next();
             }
@@ -62,9 +61,7 @@ router.post('/', (req, res) => {
 });
 
 router.post('/checkLogged', validateToken, (req, res) => {
-    var idaccount = req.body.account;
-
-    console.log(req.body);
+    var idaccount = req.account;
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
