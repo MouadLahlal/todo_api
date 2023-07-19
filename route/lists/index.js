@@ -97,7 +97,7 @@ router.get('/getImportant', validateToken, async (req, res) => {
     if (idaccount) {
         db.getConnection(async (err, connection) => {
             console.log(idaccount);
-            connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=? and done=?", [idaccount, 4, 0], (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=? AND priority=? and done=?", [idaccount, 'HIGH', 0], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
