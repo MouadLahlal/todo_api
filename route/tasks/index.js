@@ -134,7 +134,7 @@ router.post('/:idtask/undone', validateToken, async (req, res) => {
     if (idaccount && idtask) {
         db.getConnection(async (err, connection) =>{
             let temp = new Date();
-            connection.query("UPDATE tasks SET done=?, completedon=? WHERE idaccount=? AND idtask=? AND done=0", [1, null, idaccount, idtask], (error, results) => {
+            connection.query("UPDATE tasks SET done=?, completedon=? WHERE idaccount=? AND idtask=? AND done=1", [0, null, idaccount, idtask], (error, results) => {
                 if (error) {
                     console.log(error);
                     res.json({status:false, message:"An error occured while setting as completed the task"});
