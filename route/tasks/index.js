@@ -125,6 +125,29 @@ router.post('/:idtask/done', validateToken, async (req, res) => {
             });
         });
     }
-})
+});
+
+router.post('/:idtask/undone', validateToken, async (req, res) => {
+    var idaccount = req.account;
+    var idtask = req.params.idtask;
+
+    if (idaccount && idtask) {
+        db.getConnection(async (err, connection) =>{
+            let temp = new Date();
+            connection.query("UPDATE tasks SET done=?, completedon=? WHERE idaccount=? AND idtask=? AND done=0", [1, null, idaccount, idtask], (error, results) => {
+                if (error) {
+                    console.log(error);
+                    res.json({status:false, message:"An error occured while setting as completed the task"});
+                } else if (results.affectedRows != 0) {
+                    res.json({status:true, message:"Action performed correctly"});
+                } else {
+                    res.json({status:false, message:"You do not have permission to complete this task or this task is already done"})
+                }
+
+                res.end();
+            });
+        });
+    }
+});
 
 module.exports = router;
