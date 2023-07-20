@@ -71,7 +71,7 @@ router.get('/getToday', validateToken, async (req, res) => {
             let temp = new Date();
             let today = `${temp.getFullYear()}-${temp.getMonth()+1}-${temp.getDate()}`;
             console.log(today);
-            connection.query("SELECT * FROM tasks WHERE idaccount=? AND expiration=?", [idaccount, today], (error, results) => {
+            connection.query("SELECT * FROM tasks WHERE idaccount=? AND expiration=? and done=?", [idaccount, today, 0], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);
