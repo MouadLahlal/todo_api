@@ -40,6 +40,7 @@ router.post('/add', validateToken, async (req, res) => {
             if (note) values.push(note);
             if (expiration) values.push(expiration);
             if (priority) values.push(priority);
+            console.log(values);
             connection.query(`INSERT INTO tasks (idaccount, task, list, done ${note?", note":""}${expiration?", expiration":""}${priority?", priority":""}) VALUES (?, ?, ?, FALSE ${note?", ?":""}${expiration?", ?":""}${priority?", ?":""})`, [idaccount, task, list, note, expiration, priority], (error, results, fields) => {
                 connection.release();
                 if (error) {
