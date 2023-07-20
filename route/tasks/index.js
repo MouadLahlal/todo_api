@@ -37,11 +37,12 @@ router.post('/add', validateToken, async (req, res) => {
     if (task && list && idaccount) {
         db.getConnection(async (err, connection) => {
             const values = [idaccount, task, list];
+            const query = `INSERT INTO tasks (idaccount, task, list, done ${note?", note":""}${expiration?", expiration":""}${priority?", priority":""}) VALUES (?, ?, ?, FALSE ${note?", ?":""}${expiration?", ?":""}${priority?", ?":""})`
             if (note) values.push(note);
             if (expiration) values.push(expiration);
             if (priority) values.push(priority);
-            console.log(values);
-            connection.query(`INSERT INTO tasks (idaccount, task, list, done ${note?", note":""}${expiration?", expiration":""}${priority?", priority":""}) VALUES (?, ?, ?, FALSE ${note?", ?":""}${expiration?", ?":""}${priority?", ?":""})`, [idaccount, task, list, note, expiration, priority], (error, results, fields) => {
+            console.log(query, values);
+            connection.query(query, values, (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
