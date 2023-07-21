@@ -68,7 +68,8 @@ router.post('/modify', validateToken, async (req, res) => {
         // QUERY
         // `UPDATE tasks SET task = ?, list = ? ${note?", note = ?":""}${expiration?", expiration = ?":""}${priority?", priority = ?":""}${done?`, done = ${done==='true'?'TRUE':'FALSE'}`:""} WHERE idtask = ? AND idaccount = ?`
         db.getConnection(async (err, connection) => {
-            connection.query(`UPDATE tasks SET task = ?, list = ?, note = ?, expiration = ?, priority = ? , done = ${done==='true'?'TRUE':done==='false'?'FALSE':''} WHERE idtask = ? AND idaccount = ?`, [task, list, note, expiration, priority, idtask, idaccount], (error, results, fields) => {
+            console.log(idtask, task, note, expiration, priority, list, idaccount);
+            connection.query(`UPDATE tasks SET task = ?, list = ?, note = ?, expiration = ?, priority = ? WHERE idtask = ? AND idaccount = ?`, [task, list, note, expiration, priority, idtask, idaccount], (error, results, fields) => {
                 connection.release();
                 if (error) {
                     console.log(error);
