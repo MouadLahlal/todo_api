@@ -7,6 +7,7 @@ const dbPool = mysql.createPool({
     password           : process.env.PASSWORD_PS,
     database           : process.env.DATABASE,
     multipleStatements : false,
+    ssl                : {"rejectUnauthorized":true},
     charset            : 'utf8mb4'
 });
 
