@@ -2,10 +2,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const auth = require('./route/auth/index');
-const tasks = require('./route/tasks/index');
-const lists = require('./route/lists/index');
-const stats = require('./route/stats/index');
+const auth = require('./routes/auth/index');
+const tasks = require('./routes/tasks/index');
+const lists = require('./routes/lists/index');
+const stats = require('./routes/stats/index');
 
 const app = express();
 
