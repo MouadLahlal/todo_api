@@ -18,7 +18,7 @@ const listExist = (idaccount, name) => {
 
 router.use(express.json());
 router.put('/:oldname', validateToken, async (req, res) => {
-    var [ oldname, newname ] = [ req.params.oldname, req.body.newname ];
+    var [ oldname, newname, newicon ] = [ req.params.oldname, req.body.newname, req.body.newicon ];
     var idaccount = req.account;
     var oldListExists = await listExist(idaccount, oldname);
     var newListExists = await listExist(idaccount, newname);
@@ -30,7 +30,7 @@ router.put('/:oldname', validateToken, async (req, res) => {
                     console.log(error);
                     res.status(500).json({message:errors.global.queryError});
                 } else {
-                    connection.query("UPDATE lists SET name = ? WHERE idaccount = ? AND name = ?", [newname, idaccount, oldname], (error, results, fields) => {
+                    connection.query("UPDATE lists SET name = ?, icon = ? WHERE idaccount = ? AND name = ?", [newname, newicon, idaccount, oldname], (error, results, fields) => {
                         connection.release();
                         if (error) {
                             console.log(error);

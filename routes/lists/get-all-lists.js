@@ -10,7 +10,7 @@ router.get('/', validateToken, async (req, res) => {
 
     if (idaccount) {
         db.getConnection(async (err, connection) => {
-            connection.query("SELECT * FROM lists WHERE idaccount = ?", [idaccount], (error, results, fiels) => {
+            connection.query("SELECT * FROM lists WHERE idaccount = ?", [idaccount], (error, results) => {
                 connection.release();
                 if (error) {
                     console.log(error);

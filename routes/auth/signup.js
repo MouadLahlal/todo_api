@@ -86,7 +86,7 @@ router.post('/', async (req, res) => {
                             res.status(500).json({message:errors.auth.signupFail});
                         } else {
                             // res.json({status:true, message:"Account created successfully"});
-                            res.status(200);
+                            res.status(200).json({});
                         }
                     });
                 });

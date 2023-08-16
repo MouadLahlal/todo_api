@@ -27,10 +27,10 @@ router.post('/', (req, res) => {
                 } else if (results.length > 0) {
                     if(bcrypt.compareSync(password, results[0].password)){
                         let accessToken = jwt.sign({idaccount:results[0].idaccount, username}, process.env.SECRET_TOKEN);
-                        res.status(200).json({accessToken:accessToken});
+                        res.status(200).json({accessToken:accessToken, username:username, email:results[0].email});
                         // res.json({status:true, message:"Login successful", idaccount:results[0].idaccount, accessToken:accessToken});
                     } else {
-                        res.status(400).json({message:errors.auth.loginFail});
+                        res.status(404).json({message:errors.auth.loginFail});
                         // res.json({status:false, message:"Your credentials are incorrect, please try again"});    
                     }
                 } else {

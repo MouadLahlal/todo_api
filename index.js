@@ -6,6 +6,7 @@ const auth = require('./routes/auth/index');
 const tasks = require('./routes/tasks/index');
 const lists = require('./routes/lists/index');
 const stats = require('./routes/stats/index');
+const user = require('./routes/user/index');
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use('/auth', auth);
 app.use('/tasks', tasks);
 app.use('/lists', lists);
 app.use('/stats', stats);
+app.use('/user', user);
 
 app.listen(3001);
