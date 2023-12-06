@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../../db');
 const bcrypt = require('bcrypt');
+const errors = require('../../utils/errors');
 
 const router = express.Router();
 
@@ -59,8 +60,9 @@ const checkPassword = (password) => {
 }
 
 const hashPassword = (password) => {
-    return new Promise((resolve, reject) => {
-        if (!checkPassword) reject("The password doesn't respect the conditions");
+    return new Promise(async (resolve, reject) => {
+        let pswChecked = await checkPassword(password);
+        if (!pswChecked) reject("The password doesn't respect the conditions");
         else {
             const hash = bcrypt.hashSync(password, bcrypt.genSaltSync());
             resolve(hash);
@@ -70,33 +72,29 @@ const hashPassword = (password) => {
 
 router.post('/', async (req, res) => {
     var [ username, email, password ] = [ req.body.username, req.body.email, req.body.password ];
-
-    console.log(username, email, password, await emailExists(email), await usernameExists(username));
     
     if (username && email && password && !await emailExists(email) && !await usernameExists(username)) {
         await generateAccountId(username, password).then(async (idaccount) => {
             await hashPassword(password).then(async (hashedPsw) => {
                 db.getConnection(async (err, connection) => {
                     if (err) console.log(err);
-                    else console.log("No problem");
-                    connection.query("INSERT INTO account (idaccount, username, email, password) VALUES (?, ?, ?, ?)", [idaccount, username, email, hashedPsw], (error, results) => {
+                    connection.query("INSERT INTO account (idaccount, username, email, password) VALUES (?, ?, ?, ?)", [idaccount, username, email, hashedPsw], async (error, results) => {
                         connection.release();
-                        console.log(results);
                         if (error) {
                             console.log(error);
-                            res.json({status:false, message:"An error occurred while creating your account, please try again later"});
+                            // res.json({status:false, message:"An error occurred while creating your account, please try again later"});
+                            res.status(500).json({message:errors.auth.signupFail});
                         } else {
-                            res.json({status:true, message:"Account created successfully"});
+                            // res.json({status:true, message:"Account created successfully"});
+                            res.status(200).json({});
                         }
-            
                     });
                 });
             })
-            .catch((error) => { res.json({status:false, message:error}); })
-        }).catch((error) => { res.json({status:false, message:error}); res.end(); });
+            .catch((error) => { res.status(400).json({message:error}); })
+        }).catch((error) => { res.status(500).json({message:error}); });
     } else {
-        res.json({status:false, message:"Please enter all data correctly"});
-        res.end();
+        res.status(400).json({message:"Please enter all data correctly"});
     }
 });
 

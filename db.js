@@ -11,6 +11,4 @@ const dbPool = mysql.createPool({
     charset            : 'utf8mb4'
 });
 
-// const dbPool = mysql.createPool(process.env.DATABASE_URL);
-
 module.exports = dbPool;
