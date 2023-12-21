@@ -22,4 +22,6 @@ app.use('/lists', lists);
 app.use('/stats', stats);
 app.use('/user', user);
 
-app.listen(3001);
+app.listen(3001, () => {
+   console.log("Listening on http://localhost:3001");
+});

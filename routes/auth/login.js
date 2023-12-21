@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../../db');
+const { supabase } = require('../../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const validateToken = require('../../middleware/validate-token');
@@ -9,40 +9,49 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     var [ username, password ] = [ req.body.username, req.body.password ];
 
-    if (username && password) {
-        db.getConnection(async (err, connection) => {
-            if (err) {
-                console.log(err);
-                res.status(500).json({message:errors.global.connError});
-            }
-            connection.query("SELECT * FROM account WHERE username = ?", [username], async (error, results) => {
-                connection.release();
+    // if (username && password) {
+    //     db.getConnection(async (err, connection) => {
+    //         if (err) {
+    //             console.log(err);
+    //             res.status(500).json({message:errors.global.connError});
+    //         }
+    //         connection.query("SELECT * FROM account WHERE username = ?", [username], async (error, results) => {
+    //             connection.release();
                 
-                if (error) {
-                    //res.json({status:false, message:"There was an error logging into your account, please try again later"});
-                    res.status(500).json({message:errors.global.queryError});
-                } else if (results.length > 0) {
-                    if(bcrypt.compareSync(password, results[0].password)){
-                        let accessToken = jwt.sign({idaccount:results[0].idaccount, username}, process.env.SECRET_TOKEN);
-                        res.status(200).json({accessToken:accessToken, username:username, email:results[0].email});
-                        // res.json({status:true, message:"Login successful", idaccount:results[0].idaccount, accessToken:accessToken});
-                    } else {
-                        res.status(404).json({message:errors.auth.loginFail});
-                        // res.json({status:false, message:"Your credentials are incorrect, please try again"});    
-                    }
-                } else {
-                    res.status(400).json({message:errors.auth.loginFail});
-                    // res.json({status:false, message:"Your credentials are incorrect, please try again"});
-                }
-            });
+    //             if (error) {
+    //                 res.status(500).json({message:errors.global.queryError});
+    //             } else if (results.length > 0) {
+    //                 if(bcrypt.compareSync(password, results[0].password)){
+    //                     let accessToken = jwt.sign({idaccount:results[0].idaccount, username}, process.env.SECRET_TOKEN);
+    //                     res.status(200).json({accessToken:accessToken, username:username, email:results[0].email});
+    //                 } else {
+    //                     res.status(404).json({message:errors.auth.loginFail});
+    //                 }
+    //             } else {
+    //                 res.status(400).json({message:errors.auth.loginFail});
+    //             }
+    //         });
+    //     });
+    // } else {
+    //     res.status(400).json({message:errors.global.dataError});
+    // }
+
+    if (!username || !password) return res.status(400).json({message:errors.global.dataError});
+
+    let {data, error} = await supabase.from('account').select('*').eq('username', username);
+
+    if (error) return res.status(500).json({message: errors.global.queryError});
+    else if (data.length > 0) {
+        bcrypt.compare(password, data[0].password).then((result) => {
+            if (result) {
+                let accessToken = jwt.sign({idaccount:data[0].idaccount, username}, process.env.SECRET_TOKEN);
+                res.status(200).json({accessToken, username, email:data[0].email});
+            } else return res.status(404).json({message: errors.auth.loginFail});
         });
-    } else {
-        res.status(400).json({message:errors.global.dataError});
-        // res.json({status:false, message:"Please enter all data correctly and try again"});
-    }
+    } else return res.status(404).json({message: errors.auth.loginFail});
 });
 
 router.post('/checkLogged', validateToken, (req, res) => {

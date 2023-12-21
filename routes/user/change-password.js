@@ -1,12 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const validateToken = require('../../middleware/validate-token');
-const db = require('../../db');
+const { supabase } = require('../../db');
 const errors = require('../../utils/errors');
 const router = express.Router();
 
 const accountExists = (username, password) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         db.getConnection((err, connection) => {
             connection.query("SELECT * FROM account WHERE username=?", [username], (error, results) => {
                 if (error) {
@@ -18,11 +18,19 @@ const accountExists = (username, password) => {
                 }
             });
         });
+
+        let {data, error} = await supabase.from('account').select('*').eq('username', username);
+        if (error) reject();
+        if (data.length > 0) {
+            bcrypt.compare(password, data[0].password).then((value) => {
+                resolve(value);
+            });
+        } else resolve(false);
     });
 }
 
 const getUsernameById = (idaccount) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         db.getConnection(async (err, connection) => {
             connection.query("SELECT username FROM account WHERE idaccount=?", [idaccount], (error, results) => {
                 connection.release();
@@ -35,7 +43,12 @@ const getUsernameById = (idaccount) => {
                     reject();
                 }
             })
-        })
+        });
+
+        let {data, error} = await supabase.from('account').select('username').eq('idaccount', idaccount);
+        if (error) reject();
+        if (data.length > 0) resolve(data[0].username);
+        else reject();
     })
 }
 
@@ -62,29 +75,37 @@ router.use(express.json());
 router.patch('/', validateToken, async (req, res) => {
     var [oldPassword, newPassword, idaccount] = [req.body.oldPassword, req.body.newPassword, req.account];
     var username, isAccount;
+
     await getUsernameById(idaccount).then((usr) => username = usr )
         .catch((error) => res.status(500).json({message:errors.global.queryError}));
     await accountExists(username, oldPassword).then((value) => isAccount = value)
         .catch((error) => res.status(500).json({message:errors.global.queryError}));
     
-    console.log(oldPassword, newPassword, isAccount, await accountExists(username, oldPassword));
+    // console.log(oldPassword, newPassword, isAccount, await accountExists(username, oldPassword));
 
-    if (oldPassword && newPassword && idaccount && username && isAccount) {
-        hashPassword(newPassword).then((psw) => {
-            db.getConnection((err, connection) => {
-                connection.query("UPDATE account SET password=? WHERE idaccount=?", [psw, idaccount], (error, results) => {
-                    if (error) {
-                        console.log(error);
-                        res.status(500).json({message:errors.global.queryError});
-                    } else {
-                        res.status(200).json({});
-                    }
-                })
-            })
-        }).catch(() => {
-            res.status(400).json({message:errors.global.dataError});
-        })
-    } else {}
+    // if (oldPassword && newPassword && idaccount && username && isAccount) {
+    //     hashPassword(newPassword).then((psw) => {
+    //         db.getConnection((err, connection) => {
+    //             connection.query("UPDATE account SET password=? WHERE idaccount=?", [psw, idaccount], (error, results) => {
+    //                 if (error) {
+    //                     console.log(error);
+    //                     res.status(500).json({message:errors.global.queryError});
+    //                 } else {
+    //                     res.status(200).json({});
+    //                 }
+    //             })
+    //         })
+    //     }).catch(() => {
+    //         res.status(400).json({message:errors.global.dataError});
+    //     })
+    // } else {}
+
+    let hashedPsw = await hashPassword(newPassword);
+
+    if (!oldPassword || !newPassword || !idaccount || !username || !isAccount) return res.status(400).json({message:errors.global.dataError});
+    let {error} = await supabase.from('account').update({password: hashedPsw}).eq('idaccount', idaccount);
+    if (error) return res.status(500).json({message:errors.global.queryError});
+    return res.status(200).json({});
 });
 
 module.exports = router;
